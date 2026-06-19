@@ -63,7 +63,7 @@ export default function ViewPage() {
   const gridSeats: SeatGridSeat[] = seatState.seats;
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-slate-50 px-4 py-6">
+    <main className="min-h-screen bg-gradient-to-b from-blue-50 to-slate-50 px-3 py-5 sm:px-4 sm:py-6">
       <div className="mx-auto w-full max-w-2xl">
         <p className="text-center text-sm text-slate-500">{data.className}</p>
         <h1 className="mt-1 text-center text-xl font-bold text-slate-900">
@@ -83,7 +83,7 @@ export default function ViewPage() {
           </div>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
           <div className="mb-4 flex flex-wrap gap-3 text-xs text-slate-600">
             <span className="flex items-center gap-1">
               <span className="inline-block h-4 w-4 rounded border border-emerald-300 bg-emerald-50" />

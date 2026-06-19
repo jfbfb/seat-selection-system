@@ -77,6 +77,7 @@ model InviteCode {
   code       String           @unique
   status     InviteCodeStatus @default(unused)
   usedAt     DateTime?        @map("used_at")
+  createdAt  DateTime         @default(now()) @map("created_at")
   class      Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
   selection  Selection?
 

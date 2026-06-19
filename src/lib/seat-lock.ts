@@ -165,6 +165,11 @@ export async function moveSelection(params: {
       where: { id: selection.id },
       data: { seatId: newSeat.id },
     });
+
+    await tx.inviteCode.update({
+      where: { id: selection.inviteCodeId },
+      data: { usedAt: new Date() },
+    });
   });
 
   const selection = await prisma.selection.findUnique({

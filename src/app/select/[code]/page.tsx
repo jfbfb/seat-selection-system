@@ -177,14 +177,14 @@ export default function SelectPage() {
   const selectedSeat = seats.find((s) => s.id === selectedSeatId);
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-6">
+    <main className="min-h-screen bg-slate-50 px-3 py-5 sm:px-4 sm:py-6">
       <div className="mx-auto w-full max-w-2xl">
         <h1 className="text-center text-xl font-bold text-slate-900">
           {className}
         </h1>
-        <p className="mb-6 text-center text-sm text-slate-500">请选择座位</p>
+        <p className="mb-4 text-center text-sm text-slate-500 sm:mb-6">请选择座位</p>
 
-        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:mb-6 sm:p-4">
           <SeatGrid
             rows={seatState?.rows ?? 0}
             cols={seatState?.cols ?? 0}
@@ -215,7 +215,7 @@ export default function SelectPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+          className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4"
         >
           {selectedSeat && (
             <p className="mb-4 text-center text-sm font-medium text-blue-700">

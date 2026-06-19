@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { SeatType } from "@prisma/client";
 import {
   formatSeatLabel,
@@ -40,26 +41,64 @@ interface SeatGridProps {
   compact?: boolean;
 }
 
+const MOBILE_CELL =
+  "aspect-square w-full min-w-0 min-h-0 p-0.5 text-[10px] leading-tight";
+
 const DENSITY_STYLES: Record<
   GridDensity,
   { cell: string; name: string; gender: string }
 > = {
   large: {
-    cell: "min-h-[3.5rem] min-w-[4.5rem] px-1 py-1 text-xs",
+    cell: "min-h-[3.5rem] min-w-[4.5rem] px-1 py-1 text-xs sm:aspect-auto sm:min-h-[3.5rem] sm:min-w-[4.5rem]",
     name: "text-xs font-medium leading-tight",
     gender: "text-[10px] leading-tight opacity-80",
   },
   medium: {
-    cell: "min-h-[3rem] min-w-[3.5rem] px-0.5 py-0.5 text-[11px]",
+    cell: "min-h-[3rem] min-w-[3.5rem] px-0.5 py-0.5 text-[11px] sm:aspect-auto sm:min-h-[3rem] sm:min-w-[3.5rem]",
     name: "text-[11px] font-medium leading-tight",
     gender: "text-[9px] leading-tight opacity-80",
   },
   compact: {
-    cell: "h-12 w-12 text-xs sm:h-14 sm:w-14 sm:text-sm",
-    name: "text-xs leading-tight",
+    cell: "aspect-square w-full min-w-0 min-h-0 p-0.5 text-[10px] sm:h-14 sm:w-14 sm:min-w-[3.5rem] sm:aspect-auto sm:text-sm",
+    name: "text-[10px] leading-tight sm:text-xs",
     gender: "hidden",
   },
 };
+
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  return isMobile;
+}
+
+function getColumnTemplate(
+  cols: number,
+  seats: SeatGridSeat[],
+  isMobile: boolean
+): string {
+  if (!isMobile) {
+    return `repeat(${cols}, minmax(0, 1fr))`;
+  }
+
+  const aisleCols = new Set<number>();
+  for (const seat of seats) {
+    if (seat.type === "aisle") aisleCols.add(seat.col);
+  }
+
+  return Array.from({ length: cols }, (_, i) => {
+    const col = i + 1;
+    if (aisleCols.has(col)) return "minmax(1rem, 0.4fr)";
+    return "minmax(0, 1fr)";
+  }).join(" ");
+}
 
 function seatClass(
   seat: SeatGridSeat,
@@ -120,7 +159,8 @@ function seatClass(
 function renderOccupantContent(
   seat: SeatGridSeat,
   density: GridDensity,
-  showOccupantInfo: boolean
+  showOccupantInfo: boolean,
+  isMobile: boolean
 ) {
   if (!seat.selection) return null;
 
@@ -128,12 +168,12 @@ function renderOccupantContent(
     GENDER_LABELS[seat.selection.gender as Gender] ?? seat.selection.gender;
   const fullTitle = `${seat.selection.studentName}（${genderLabel}）`;
 
-  if (!showOccupantInfo) {
-    const maxLen = density === "compact" ? 2 : 4;
+  if (isMobile || !showOccupantInfo) {
+    const maxLen = isMobile ? 3 : density === "compact" ? 2 : 4;
     return {
       title: fullTitle,
       content: (
-        <span className={DENSITY_STYLES[density].name}>
+        <span className={isMobile ? "text-[10px] leading-tight" : DENSITY_STYLES[density].name}>
           {truncateName(seat.selection.studentName, maxLen)}
         </span>
       ),
@@ -172,9 +212,15 @@ export function SeatGrid({
   onSeatClick,
   compact = false,
 }: SeatGridProps) {
+  const isMobile = useIsMobile();
   const seatMap = new Map(seats.map((s) => [`${s.row}-${s.col}`, s]));
-  const density = compact ? "compact" : getGridDensity(rows, cols);
-  const cellSize = DENSITY_STYLES[density].cell;
+  const density = compact
+    ? "compact"
+    : getGridDensity(rows, cols, isMobile);
+  const cellSize = isMobile ? MOBILE_CELL : DENSITY_STYLES[density].cell;
+  const useShortLabel = compact || isMobile;
+  const gridGap = isMobile ? "gap-1" : "gap-1.5";
+  const columnTemplate = getColumnTemplate(cols, seats, isMobile);
   const { podiumCol, podiumSpan } = clampPodium(
     podiumColProp ?? defaultPodiumCol(cols, podiumSpanProp),
     podiumSpanProp ?? DEFAULT_PODIUM_SPAN,
@@ -182,11 +228,11 @@ export function SeatGrid({
   );
 
   return (
-    <div className="overflow-x-auto">
-      <div className="inline-block min-w-full">
+    <div className={isMobile ? "w-full" : "overflow-x-auto"}>
+      <div className="w-full">
         <div
-          className="inline-grid gap-1.5"
-          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+          className={`grid w-full ${gridGap}`}
+          style={{ gridTemplateColumns: columnTemplate }}
         >
           {Array.from({ length: cols }, (_, colIdx) => {
             const col = colIdx + 1;
@@ -223,7 +269,7 @@ export function SeatGrid({
 
               const label =
                 seat.type === "normal"
-                  ? compact
+                  ? useShortLabel
                     ? `${seat.row}-${seat.col}`
                     : formatSeatLabel(seat.row, seat.col)
                         .replace("排", "-")
@@ -240,7 +286,12 @@ export function SeatGrid({
                     : formatSeatLabel(seat.row, seat.col);
 
               const occupant = seat.selection
-                ? renderOccupantContent(seat, density, showOccupantInfo)
+                ? renderOccupantContent(
+                    seat,
+                    density,
+                    showOccupantInfo,
+                    isMobile
+                  )
                 : null;
 
               const title = occupant?.title ?? defaultTitle;

@@ -20,7 +20,12 @@ export type GridDensity = "large" | "medium" | "compact";
 
 export const DEFAULT_PODIUM_SPAN = 2;
 
-export function getGridDensity(rows: number, cols: number): GridDensity {
+export function getGridDensity(
+  rows: number,
+  cols: number,
+  isMobile = false
+): GridDensity {
+  if (isMobile && cols >= 4) return "compact";
   const total = rows * cols;
   if (total <= 48) return "large";
   if (total <= 96) return "medium";

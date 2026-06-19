@@ -24,7 +24,6 @@ export async function GET(
 
   const codes = await prisma.inviteCode.findMany({
     where: { classId: id },
-    orderBy: { id: "desc" },
     include: {
       selection: {
         select: { studentName: true, seat: { select: { row: true, col: true } } },
@@ -32,8 +31,20 @@ export async function GET(
     },
   });
 
+  const sorted = [...codes].sort((a, b) => {
+    const aUnused = a.status === "unused";
+    const bUnused = b.status === "unused";
+    if (aUnused !== bUnused) return aUnused ? -1 : 1;
+    if (aUnused) {
+      return b.createdAt.getTime() - a.createdAt.getTime();
+    }
+    const aTime = a.usedAt?.getTime() ?? 0;
+    const bTime = b.usedAt?.getTime() ?? 0;
+    return bTime - aTime;
+  });
+
   return NextResponse.json({
-    codes: codes.map((c) => ({
+    codes: sorted.map((c) => ({
       id: c.id,
       code: c.code,
       status: c.status,
