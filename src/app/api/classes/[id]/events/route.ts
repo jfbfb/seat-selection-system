@@ -1,0 +1,64 @@
+import { classEventBus } from "@/lib/events";
+import { getClassSeatState } from "@/lib/class-service";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  const encoder = new TextEncoder();
+  let unsubscribe: (() => void) | null = null;
+  let closed = false;
+
+  const stream = new ReadableStream({
+    start(controller) {
+      const send = async () => {
+        if (closed) return;
+        const state = await getClassSeatState(id);
+        if (!state) {
+          controller.enqueue(
+            encoder.encode(`event: error\ndata: ${JSON.stringify({ error: "not_found" })}\n\n`)
+          );
+          return;
+        }
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify(state)}\n\n`)
+        );
+      };
+
+      void send();
+
+      unsubscribe = classEventBus.subscribe(id, () => {
+        void send();
+      });
+
+      const heartbeat = setInterval(() => {
+        if (closed) return;
+        controller.enqueue(encoder.encode(": heartbeat\n\n"));
+      }, 15000);
+
+      const cleanup = () => {
+        closed = true;
+        clearInterval(heartbeat);
+        unsubscribe?.();
+      };
+
+      (controller as { _cleanup?: () => void })._cleanup = cleanup;
+    },
+    cancel() {
+      closed = true;
+      unsubscribe?.();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+    },
+  });
+}

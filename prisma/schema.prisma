@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admins")
+}
+
+model Teacher {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  classes      Class[]
+
+  @@map("teachers")
+}
+
+model Class {
+  id            String       @id @default(uuid())
+  teacherId     String       @map("teacher_id")
+  name          String
+  description   String?
+  rows          Int
+  cols          Int
+  podiumCol     Int          @default(1) @map("podium_col")
+  podiumSpan    Int          @default(2) @map("podium_span")
+  selectionOpen Boolean      @default(true) @map("selection_open")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  teacher       Teacher      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  seats         Seat[]
+  inviteCodes   InviteCode[]
+  selections    Selection[]
+
+  @@map("classes")
+}
+
+enum SeatType {
+  normal
+  aisle
+  empty
+}
+
+model Seat {
+  id        String      @id @default(uuid())
+  classId   String      @map("class_id")
+  row       Int
+  col       Int
+  type      SeatType    @default(normal)
+  class     Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  selection Selection?
+
+  @@unique([classId, row, col])
+  @@map("seats")
+}
+
+enum InviteCodeStatus {
+  unused
+  used
+}
+
+model InviteCode {
+  id         String           @id @default(uuid())
+  classId    String           @map("class_id")
+  code       String           @unique
+  status     InviteCodeStatus @default(unused)
+  usedAt     DateTime?        @map("used_at")
+  class      Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  selection  Selection?
+
+  @@map("invite_codes")
+}
+
+enum Gender {
+  male
+  female
+  other
+}
+
+model Selection {
+  id           String     @id @default(uuid())
+  classId      String     @map("class_id")
+  seatId       String     @unique @map("seat_id")
+  inviteCodeId String     @unique @map("invite_code_id")
+  studentName  String     @map("student_name")
+  gender       Gender
+  viewToken    String     @unique @map("view_token")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  class        Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  seat         Seat       @relation(fields: [seatId], references: [id])
+  inviteCode   InviteCode @relation(fields: [inviteCodeId], references: [id])
+
+  @@map("selections")
+}

@@ -1,0 +1,1 @@
+ALTER TABLE "classes" ADD COLUMN "podium_span" INTEGER NOT NULL DEFAULT 2;
