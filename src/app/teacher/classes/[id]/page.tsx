@@ -67,6 +67,7 @@ export default function ClassDetailPage() {
   const [editForm, setEditForm] = useState({ studentName: "", gender: "male" });
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [copyError, setCopyError] = useState("");
+  const [isLocalhost, setIsLocalhost] = useState(false);
 
   const onSeatUpdate = useCallback((state: ClassSeatState) => {
     setSeatState((prev) =>
@@ -134,6 +135,10 @@ export default function ClassDetailPage() {
   }
 
   useEffect(() => {
+    setIsLocalhost(window.location.hostname === "localhost");
+  }, []);
+
+  useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -162,6 +167,13 @@ export default function ClassDetailPage() {
       method: "POST",
     });
     if (res.ok) void loadCodes();
+  }
+
+  function inviteShareUrl(code: string, apiUrl: string) {
+    if (typeof window !== "undefined") {
+      return `${window.location.origin}/select/${code}`;
+    }
+    return apiUrl;
   }
 
   async function copyText(text: string, key: string) {
@@ -580,6 +592,12 @@ export default function ClassDetailPage() {
               {copyError}
             </p>
           )}
+          {isLocalhost && (
+            <p className="border-b border-amber-100 bg-amber-50 px-4 py-2 text-sm text-amber-800 sm:px-6">
+              当前通过 localhost 访问，邀请链接仅本机可用。请改用公网地址（如
+              Render 域名或 localtunnel 链接）打开老师端后再复制链接。
+            </p>
+          )}
           <div className="divide-y divide-slate-100">
             {codes.map((c) => (
               <div
@@ -619,7 +637,9 @@ export default function ClassDetailPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => copyText(c.url, `${c.id}-url`)}
+                    onClick={() =>
+                      copyText(inviteShareUrl(c.code, c.url), `${c.id}-url`)
+                    }
                     className={`rounded border px-2 py-1 text-xs transition-colors hover:bg-slate-50 active:bg-slate-100 ${
                       copiedKey === `${c.id}-url`
                         ? "border-emerald-300 bg-emerald-50 text-emerald-700"
