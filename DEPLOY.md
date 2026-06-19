@@ -1,95 +1,97 @@
-# 公网部署指南（Zeabur）
+# 公网部署指南
 
 代码仓库：https://github.com/jfbfb/seat-selection-system
 
-推荐使用 **Zeabur** 部署：中文界面、免费档无需境外信用卡、固定公网域名，适合手机访问和发邀请链接。
+## 推荐：Vercel + Neon（免费、最适合本项目）
 
-## 一、注册 Zeabur
+本项目是 **Next.js + Prisma + Neon PostgreSQL**，用 Vercel 部署最省事：**不用买服务器、不用绑信用卡**，和 Render 不同，也比重定向到 Zeabur 买 VPS 更划算。
 
-1. 打开 https://zeabur.com
-2. 点击 **开始使用** / **Get Started**
-3. 用 **GitHub** 登录（账号 `jfbfb`）
-4. 授权 Zeabur 访问你的 GitHub 仓库
+### 一、注册 Vercel
 
-## 二、创建项目并部署
+1. 打开 https://vercel.com
+2. 用 **GitHub** 登录（账号 `jfbfb`）
+3. 授权 Vercel 读取你的仓库
 
-1. 进入 [Zeabur 控制台](https://zeabur.com/dashboard)
-2. 点击 **创建项目** → 选择区域（建议选离用户近的，如东京/台湾等）
-3. 在项目中点击 **部署新服务** → **GitHub**
-4. 首次使用需 **配置 GitHub**，授权 Zeabur 读取仓库
-5. 搜索并选择 **`seat-selection-system`** 仓库
-6. 分支选 **`main`**，Root Directory **留空**
-7. Zeabur 会自动识别为 **Next.js** 项目（已包含 [`zbpack.json`](zbpack.json) 启动命令）
-8. 点击 **部署**，等待构建（约 3～8 分钟）
+### 二、导入项目
 
-## 三、配置环境变量
-
-部署前或部署中，进入该服务的 **配置（Configuration）** → **环境变量**，添加：
+1. 控制台点 **Add New… → Project**
+2. 选择 **`seat-selection-system`** 仓库
+3. Framework 会自动识别为 **Next.js**，保持默认即可
+4. **先不要点 Deploy**，展开 **Environment Variables**，添加：
 
 | 变量名 | 值 | 说明 |
 |--------|-----|------|
-| `DATABASE_URL` | 从本地 `.env` 复制 | Neon 连接串，须含 `sslmode=require` |
-| `SESSION_SECRET` | 48 位以上随机字符串 | 不要用 `dev-secret...` |
+| `DATABASE_URL` | 从本地 `.env` 复制 | Neon 连接串 |
+| `SESSION_SECRET` | 48 位以上随机字符串 | 生产环境不要用 `dev-secret...` |
 | `ADMIN_USERNAME` | `admin` | 管理员用户名 |
-| `ADMIN_PASSWORD` | 自行设置强密码 | 生产环境请改掉 `admin123` |
-| `NODE_ENV` | `production` | 可选，建议填写 |
+| `ADMIN_PASSWORD` | 自行设置强密码 | 改掉默认 `admin123` |
 
-`NEXT_PUBLIC_APP_URL` **可先不填**——项目会从请求头自动识别 Zeabur 域名生成邀请链接。
+5. 点击 **Deploy**，等待构建（约 2～5 分钟）
 
-添加变量后点击 **重新部署（Redeploy）**。
+构建时会自动执行 `prisma migrate deploy`（见 `package.json` 的 `vercel-build` 脚本）。
 
-## 四、获取公网地址
+### 三、首次初始化管理员（仅第一次）
 
-1. 构建成功后，在服务 **网络（Networking）** 或 **域名** 页面
-2. 使用 Zeabur 提供的默认域名，形如：  
-   `https://seat-selection-system-xxx.zeabur.app`
-3. 浏览器打开该地址，确认首页可访问
+部署成功后，在本地项目目录执行一次种子数据（连的是同一个 Neon 库）：
 
-可选：把 `NEXT_PUBLIC_APP_URL` 设为该域名（无末尾 `/`），再 Redeploy 一次。
+```bash
+npm run db:seed
+```
 
-## 五、验证清单
+如果管理员账号已存在，可跳过。
 
-- [ ] `https://你的域名/` 首页可打开
+### 四、获取公网地址
+
+部署完成后会得到域名，形如：
+
+`https://seat-selection-system-xxx.vercel.app`
+
+用手机打开 `https://你的域名/teacher/login` 测试。老师端「复制链接」应显示 Vercel 域名，而不是 localhost。
+
+可选：在 Vercel 环境变量里设 `NEXT_PUBLIC_APP_URL` 为该域名（无末尾 `/`），再 Redeploy。
+
+### 五、验证清单
+
+- [ ] 首页可打开
 - [ ] `/admin/login` 管理员能登录
 - [ ] `/teacher/login` 老师能登录
-- [ ] 生成邀请码 → **复制链接** 以 `https://你的域名/select/...` 开头（不是 localhost）
-- [ ] 手机用 4G/5G 打开邀请链接能选座
+- [ ] 邀请链接以 `https://你的域名/select/...` 开头
+- [ ] 手机 4G 能打开并选座
 
-## 六、费用说明
+### 六、费用
 
 | 项目 | 说明 |
 |------|------|
-| Zeabur Free | $0/月，无需绑信用卡；空闲时会休眠，首次打开稍等几秒 |
-| Neon 数据库 | 继续用现有免费档即可，无需迁移 |
-| 升级 Dev Plan | $5/月，服务不休眠、更适合长期正式使用 |
+| Vercel Hobby | **$0/月**，个人/课程项目够用 |
+| Neon | 继续用现有免费档（0.5GB 存储） |
 
-## 七、以后更新代码
+### 七、以后更新
 
 ```bash
-git add .
-git commit -m "更新说明"
 git push
 ```
 
-Zeabur 会自动从 GitHub 拉取并重新部署，**域名不变**。
+Vercel 自动重新部署，域名不变。
 
-## 八、常见问题
+### 八、注意事项
 
-| 现象 | 处理 |
+| 现象 | 说明 |
 |------|------|
-| Build 失败 | 查看 Zeabur **日志**；常见为 `DATABASE_URL` 错误或 Neon 暂停 |
-| 打开很慢 | 免费档休眠，等几秒后刷新 |
-| 邀请链接是 localhost | 用 Zeabur 域名打开老师端再复制；或设置 `NEXT_PUBLIC_APP_URL` |
-| 数据库表不存在 | 确认 `zbpack.json` 中启动命令含 `prisma migrate deploy`；手动在服务里执行该命令 |
-| Prisma 相关错误 | 确认 `DATABASE_URL` 完整且 Neon 项目处于 Active 状态 |
+| 国内访问偏慢 | Vercel 节点在海外；可绑自己的域名，或以后迁到国内服务器 |
+| 座位不是秒级同步 | Vercel 是无服务器架构，多人同时选座时老师端刷新可能稍慢；**选座互斥仍由数据库保证**，不会重复占座 |
+| Build 失败 | 检查 `DATABASE_URL` 是否正确、Neon 是否 Active |
 
-## 附录：CLI 部署（可选）
+---
 
-已安装并登录 Zeabur CLI 时，可在项目目录执行：
+## 备选：Zeabur（需买服务器，约 ¥22/月起）
 
-```bash
-npx zeabur@latest auth login
-npx zeabur@latest deploy
-```
+Zeabur 自 2026 年起取消免费共享集群，新建项目必须先购买 VPS。若你更看重国内机房速度、愿意每月付费，可参考以下流程。
 
-日常使用 **GitHub 推送自动部署** 即可，不必每次用 CLI。
+1. https://zeabur.com 用 GitHub 登录
+2. **购买新服务器**（火山引擎/腾讯云海外最低约 $3/月）
+3. **创建新项目** → 选已有服务器
+4. **部署新服务 → GitHub** → 选 `seat-selection-system`
+5. 配置与上表相同的环境变量
+6. 使用 `*.zeabur.app` 域名访问
+
+详见项目内 [`zbpack.json`](zbpack.json)（含 migrate + seed 启动命令）。

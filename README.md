@@ -57,16 +57,16 @@ npm run dev
 3. 将邀请链接发给学生 → 学生选座
 4. 学生保存查看链接；老师可随时调整座位、导出/打印
 
-## 云端部署（Zeabur，推荐）
+## 云端部署（Vercel + Neon，推荐）
 
 详细步骤见 **[DEPLOY.md](./DEPLOY.md)**。
 
-1. 打开 https://zeabur.com ，用 GitHub 登录
-2. 创建项目 → **部署新服务** → 选择仓库 `jfbfb/seat-selection-system`
+1. 打开 https://vercel.com ，用 GitHub 登录
+2. **Import** 仓库 `jfbfb/seat-selection-system`
 3. 配置环境变量：`DATABASE_URL`（Neon）、`SESSION_SECRET`、`ADMIN_USERNAME`、`ADMIN_PASSWORD`
-4. 部署完成后使用 Zeabur 提供的 `*.zeabur.app` 域名访问
+4. Deploy 完成后使用 `*.vercel.app` 域名访问；首次在本地执行 `npm run db:seed` 初始化管理员
 
-数据库可继续使用 Neon 免费档，无需在 Zeabur 再建库。
+数据库继续使用 Neon 免费档，无需另购。
 
 ## API 概览
 

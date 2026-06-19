@@ -169,6 +169,23 @@ export default function ClassDetailPage() {
     if (res.ok) void loadCodes();
   }
 
+  async function deleteCode(codeId: string, code: string) {
+    if (!confirm(`确定删除邀请码 ${code}？`)) return;
+
+    const res = await fetch(
+      `/api/teacher/classes/${classId}/invite-codes/${codeId}`,
+      { method: "DELETE" }
+    );
+
+    if (res.ok) {
+      void loadCodes();
+      return;
+    }
+
+    const data = await res.json().catch(() => ({}));
+    alert(data.error ?? "删除失败");
+  }
+
   function inviteShareUrl(code: string, apiUrl: string) {
     if (typeof window !== "undefined") {
       return `${window.location.origin}/select/${code}`;
@@ -648,6 +665,15 @@ export default function ClassDetailPage() {
                   >
                     {copiedKey === `${c.id}-url` ? "已复制" : "复制链接"}
                   </button>
+                  {c.status !== "used" && (
+                    <button
+                      type="button"
+                      onClick={() => deleteCode(c.id, c.code)}
+                      className="rounded border border-red-200 px-2 py-1 text-xs text-red-600 transition-colors hover:bg-red-50 active:bg-red-100"
+                    >
+                      删除
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
