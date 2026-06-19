@@ -13,7 +13,7 @@ async function requireTeacherClass(classId: string) {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -38,14 +38,14 @@ export async function GET(
       code: c.code,
       status: c.status,
       usedAt: c.usedAt,
-      url: getSelectUrl(c.code),
+      url: getSelectUrl(c.code, request),
       selection: c.selection,
     })),
   });
 }
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -72,7 +72,7 @@ export async function POST(
       id: inviteCode.id,
       code: inviteCode.code,
       status: inviteCode.status,
-      url: getSelectUrl(inviteCode.code),
+      url: getSelectUrl(inviteCode.code, request),
     },
   });
 }

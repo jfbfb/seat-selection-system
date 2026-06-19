@@ -30,7 +30,7 @@ export async function POST(
     return NextResponse.json({
       ok: true,
       viewToken: result.viewToken,
-      viewUrl: getViewUrl(result.viewToken),
+      viewUrl: getViewUrl(result.viewToken, request),
       duplicateWarning: result.duplicateWarning,
     });
   } catch (e) {

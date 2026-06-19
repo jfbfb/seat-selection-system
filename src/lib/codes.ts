@@ -18,14 +18,30 @@ export function generateViewToken(): string {
   return randomBytes(32).toString("hex");
 }
 
-export function getAppUrl(): string {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+export function getAppUrl(request?: Request): string {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+  if (configured && configured !== "http://localhost:3000") {
+    return configured;
+  }
+
+  if (request) {
+    const host =
+      request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+    if (host) {
+      const proto =
+        request.headers.get("x-forwarded-proto") ??
+        (host.startsWith("localhost") ? "http" : "https");
+      return `${proto}://${host}`;
+    }
+  }
+
+  return configured ?? "http://localhost:3000";
 }
 
-export function getSelectUrl(code: string): string {
-  return `${getAppUrl()}/select/${code}`;
+export function getSelectUrl(code: string, request?: Request): string {
+  return `${getAppUrl(request)}/select/${code}`;
 }
 
-export function getViewUrl(token: string): string {
-  return `${getAppUrl()}/view/${token}`;
+export function getViewUrl(token: string, request?: Request): string {
+  return `${getAppUrl(request)}/view/${token}`;
 }
