@@ -57,26 +57,16 @@ npm run dev
 3. 将邀请链接发给学生 → 学生选座
 4. 学生保存查看链接；老师可随时调整座位、导出/打印
 
-## 云端部署（Railway / Render）
+## 云端部署（Zeabur，推荐）
 
-1. 创建 PostgreSQL 数据库，获取 `DATABASE_URL`
-2. 部署本仓库，设置环境变量：
+详细步骤见 **[DEPLOY.md](./DEPLOY.md)**。
 
-| 变量 | 说明 |
-|------|------|
-| `DATABASE_URL` | PostgreSQL 连接串 |
-| `SESSION_SECRET` | 至少 32 位随机字符串 |
-| `ADMIN_USERNAME` | 初始管理员用户名 |
-| `ADMIN_PASSWORD` | 初始管理员密码 |
-| `NEXT_PUBLIC_APP_URL` | 站点公网 URL |
+1. 打开 https://zeabur.com ，用 GitHub 登录
+2. 创建项目 → **部署新服务** → 选择仓库 `jfbfb/seat-selection-system`
+3. 配置环境变量：`DATABASE_URL`（Neon）、`SESSION_SECRET`、`ADMIN_USERNAME`、`ADMIN_PASSWORD`
+4. 部署完成后使用 Zeabur 提供的 `*.zeabur.app` 域名访问
 
-3. 构建命令：`npm run build`（含 `prisma generate`）
-4. 启动前执行迁移与种子：
-
-```bash
-npx prisma migrate deploy
-npm run db:seed
-```
+数据库可继续使用 Neon 免费档，无需在 Zeabur 再建库。
 
 ## API 概览
 

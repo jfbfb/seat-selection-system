@@ -1,63 +1,69 @@
-# 公网部署指南（Render）
+# 公网部署指南（Zeabur）
 
 代码仓库：https://github.com/jfbfb/seat-selection-system
 
-## 一、一键创建服务（推荐）
+推荐使用 **Zeabur** 部署：中文界面、免费档无需境外信用卡、固定公网域名，适合手机访问和发邀请链接。
 
-1. 打开：**https://render.com/deploy?repo=https://github.com/jfbfb/seat-selection-system**
-2. 用 GitHub 登录 Render，并授权访问仓库 `jfbfb/seat-selection-system`
-3. 按下面「环境变量」表格填写（`DATABASE_URL` 从你本地 `.env` 复制）
-4. 点击 **Apply** / **Deploy Blueprint** 或 **Create Web Service**
-5. 等待首次构建（约 3～8 分钟）
+## 一、注册 Zeabur
 
-## 二、手动创建 Web Service（若一键链接不可用）
+1. 打开 https://zeabur.com
+2. 点击 **开始使用** / **Get Started**
+3. 用 **GitHub** 登录（账号 `jfbfb`）
+4. 授权 Zeabur 访问你的 GitHub 仓库
 
-1. 打开 https://dashboard.render.com → **New +** → **Web Service**
-2. 连接 GitHub，选择仓库 **`jfbfb/seat-selection-system`**
-3. 填写：
+## 二、创建项目并部署
 
-| 配置项 | 填写内容 |
-|--------|----------|
-| Name | `seat-selection-system`（任意，影响域名） |
-| Region | Singapore 或离你最近的区域 |
-| Branch | `main` |
-| Root Directory | 留空 |
-| Runtime | `Node` |
-| Build Command | `npm install && npm run build` |
-| Start Command | `npx prisma migrate deploy && npm run db:seed && npm start` |
-| Instance Type | **Free** |
+1. 进入 [Zeabur 控制台](https://zeabur.com/dashboard)
+2. 点击 **创建项目** → 选择区域（建议选离用户近的，如东京/台湾等）
+3. 在项目中点击 **部署新服务** → **GitHub**
+4. 首次使用需 **配置 GitHub**，授权 Zeabur 读取仓库
+5. 搜索并选择 **`seat-selection-system`** 仓库
+6. 分支选 **`main`**，Root Directory **留空**
+7. Zeabur 会自动识别为 **Next.js** 项目（已包含 [`zbpack.json`](zbpack.json) 启动命令）
+8. 点击 **部署**，等待构建（约 3～8 分钟）
 
-4. 展开 **Environment Variables**，添加下表变量
-5. 点击 **Create Web Service**
+## 三、配置环境变量
 
-## 三、环境变量
+部署前或部署中，进入该服务的 **配置（Configuration）** → **环境变量**，添加：
 
 | 变量名 | 值 | 说明 |
 |--------|-----|------|
-| `DATABASE_URL` | 从本地 `.env` 整行复制 | Neon 连接串，必须含 `sslmode=require` |
-| `SESSION_SECRET` | 48 位以上随机字符串 | 生产环境不要用 `dev-secret...` |
-| `ADMIN_USERNAME` | `admin` | 管理员登录名 |
-| `ADMIN_PASSWORD` | 自行设置强密码 | 生产环境建议改掉 `admin123` |
-| `NEXT_PUBLIC_APP_URL` | 见下方第四步 | 首次可先留空或填占位，部署后再改 |
+| `DATABASE_URL` | 从本地 `.env` 复制 | Neon 连接串，须含 `sslmode=require` |
+| `SESSION_SECRET` | 48 位以上随机字符串 | 不要用 `dev-secret...` |
+| `ADMIN_USERNAME` | `admin` | 管理员用户名 |
+| `ADMIN_PASSWORD` | 自行设置强密码 | 生产环境请改掉 `admin123` |
+| `NODE_ENV` | `production` | 可选，建议填写 |
 
-## 四、部署完成后（重要）
+`NEXT_PUBLIC_APP_URL` **可先不填**——项目会从请求头自动识别 Zeabur 域名生成邀请链接。
 
-1. 在 Render 服务页复制公网地址，形如：  
-   `https://seat-selection-system-xxxx.onrender.com`
-2. 进入 **Environment** → 把 `NEXT_PUBLIC_APP_URL` 设为该地址（不要末尾 `/`）
-3. 点击 **Manual Deploy** → **Clear build cache & deploy** 重新部署一次
-4. 浏览器打开公网地址，验证：
-   - 首页能打开
-   - `/admin/login` 能登录
-   - 老师建班 → 邀请码 → **复制链接** 应为 `https://xxx.onrender.com/select/...`
+添加变量后点击 **重新部署（Redeploy）**。
 
-## 五、费用说明
+## 四、获取公网地址
 
-- Render **Free** 实例：$0，一段时间无访问会休眠，首次打开需等待约 30 秒
-- Neon 免费档：小项目一般够用
-- 数据库你已用 Neon 新加坡节点，**无需**在 Render 再建数据库
+1. 构建成功后，在服务 **网络（Networking）** 或 **域名** 页面
+2. 使用 Zeabur 提供的默认域名，形如：  
+   `https://seat-selection-system-xxx.zeabur.app`
+3. 浏览器打开该地址，确认首页可访问
 
-## 六、以后更新代码
+可选：把 `NEXT_PUBLIC_APP_URL` 设为该域名（无末尾 `/`），再 Redeploy 一次。
+
+## 五、验证清单
+
+- [ ] `https://你的域名/` 首页可打开
+- [ ] `/admin/login` 管理员能登录
+- [ ] `/teacher/login` 老师能登录
+- [ ] 生成邀请码 → **复制链接** 以 `https://你的域名/select/...` 开头（不是 localhost）
+- [ ] 手机用 4G/5G 打开邀请链接能选座
+
+## 六、费用说明
+
+| 项目 | 说明 |
+|------|------|
+| Zeabur Free | $0/月，无需绑信用卡；空闲时会休眠，首次打开稍等几秒 |
+| Neon 数据库 | 继续用现有免费档即可，无需迁移 |
+| 升级 Dev Plan | $5/月，服务不休眠、更适合长期正式使用 |
+
+## 七、以后更新代码
 
 ```bash
 git add .
@@ -65,13 +71,25 @@ git commit -m "更新说明"
 git push
 ```
 
-Render 会自动从 GitHub 拉取并重新部署，域名不变。
+Zeabur 会自动从 GitHub 拉取并重新部署，**域名不变**。
 
-## 七、常见问题
+## 八、常见问题
 
 | 现象 | 处理 |
 |------|------|
-| Build 失败 | 在 Render **Logs** 查看错误；常见为 `DATABASE_URL` 填错 |
-| 打开很慢 | 免费实例冷启动，等 30～60 秒再刷新 |
-| 邀请链接仍是 localhost | 检查 `NEXT_PUBLIC_APP_URL` 并重新部署 |
-| 数据库迁移失败 | 确认 Neon 项目未暂停，连接串含 `sslmode=require` |
+| Build 失败 | 查看 Zeabur **日志**；常见为 `DATABASE_URL` 错误或 Neon 暂停 |
+| 打开很慢 | 免费档休眠，等几秒后刷新 |
+| 邀请链接是 localhost | 用 Zeabur 域名打开老师端再复制；或设置 `NEXT_PUBLIC_APP_URL` |
+| 数据库表不存在 | 确认 `zbpack.json` 中启动命令含 `prisma migrate deploy`；手动在服务里执行该命令 |
+| Prisma 相关错误 | 确认 `DATABASE_URL` 完整且 Neon 项目处于 Active 状态 |
+
+## 附录：CLI 部署（可选）
+
+已安装并登录 Zeabur CLI 时，可在项目目录执行：
+
+```bash
+npx zeabur@latest auth login
+npx zeabur@latest deploy
+```
+
+日常使用 **GitHub 推送自动部署** 即可，不必每次用 CLI。
