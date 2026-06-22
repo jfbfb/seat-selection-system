@@ -1,3 +1,4 @@
+/** POST /api/auth/login — 管理员与老师统一登录入口，成功后写 Session Cookie */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/password";

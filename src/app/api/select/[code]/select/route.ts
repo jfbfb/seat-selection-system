@@ -1,3 +1,4 @@
+/** POST /api/select/[code]/select — 学生确认选座，内部调用 seat-lock.selectSeat() */
 import { NextResponse } from "next/server";
 import { selectSeat, SeatSelectionError } from "@/lib/seat-lock";
 import { getViewUrl } from "@/lib/codes";

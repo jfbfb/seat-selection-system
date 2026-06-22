@@ -1,3 +1,10 @@
+/**
+ * 登录 Session 管理
+ *
+ * 管理员和老师登录后，服务端签发 JWT 写入 Cookie（seat_session）。
+ * 后续 API 通过 getSession() 读取 Cookie 判断身份。
+ * 学生端不走路径，使用邀请码 + viewToken。
+ */
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 

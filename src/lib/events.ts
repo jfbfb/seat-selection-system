@@ -1,3 +1,10 @@
+/**
+ * 班级内存事件总线 → 驱动 SSE 推送
+ *
+ * 当座位变化时，API 调用 emitClassEvent()；
+ * SSE 路由 /api/classes/[id]/events 订阅后把最新 seatState 推给前端。
+ * 注意：存在单进程内存中，Serverless 多实例时仅同实例连接能即时收到。
+ */
 type ClassEventType =
   | "seat_selected"
   | "seat_moved"

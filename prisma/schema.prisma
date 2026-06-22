@@ -1,3 +1,18 @@
+// =============================================================================
+// 数据模型（Prisma Schema）
+// -----------------------------------------------------------------------------
+// 这是整个项目的「地基」。建议学习时从这里开始，弄清表与表之间的关系。
+//
+// 角色划分：
+//   Admin   → 系统管理员，负责创建老师账号
+//   Teacher → 老师，管理自己的班级
+//   学生    → 不建账号，凭 InviteCode 选座，凭 viewToken 查看
+//
+// 核心业务链：
+//   Class（班级）→ Seat（座位格子）→ Selection（某学生占了某座）
+//   InviteCode（邀请码）与 Selection 一对一，保证一码一座
+// =============================================================================
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,6 +22,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// 管理员表：通常只有 1 个，由 seed 脚本初始化
 model Admin {
   id           String   @id @default(uuid())
   username     String   @unique
@@ -16,6 +32,7 @@ model Admin {
   @@map("admins")
 }
 
+// 老师表：登录后管理多个 Class
 model Teacher {
   id           String   @id @default(uuid())
   username     String   @unique
@@ -28,6 +45,7 @@ model Teacher {
   @@map("teachers")
 }
 
+// 班级表：包含行列数、讲台位置、选座是否开放
 model Class {
   id            String       @id @default(uuid())
   teacherId     String       @map("teacher_id")
@@ -53,6 +71,7 @@ enum SeatType {
   empty
 }
 
+// 座位格子：normal=可选座，aisle=过道，empty=空位（不参与选座）
 model Seat {
   id        String      @id @default(uuid())
   classId   String      @map("class_id")
@@ -71,6 +90,7 @@ enum InviteCodeStatus {
   used
 }
 
+// 邀请码：老师逐个生成，学生凭链接 /select/{code} 进入
 model InviteCode {
   id         String           @id @default(uuid())
   classId    String           @map("class_id")
@@ -90,6 +110,7 @@ enum Gender {
   other
 }
 
+// 选座记录：连接 学生-座位-邀请码；viewToken 用于免登录查看
 model Selection {
   id           String     @id @default(uuid())
   classId      String     @map("class_id")

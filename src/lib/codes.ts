@@ -1,3 +1,10 @@
+/**
+ * 邀请码与链接工具
+ *
+ * generateInviteCode — 老师生成邀请码（格式 XXXX-XXXX）
+ * generateViewToken  — 学生选座后的永久查看凭证
+ * getAppUrl          — 从请求头识别公网域名，生成正确的邀请/查看链接
+ */
 import { randomBytes } from "crypto";
 
 const CHARSET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

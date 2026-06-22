@@ -1,3 +1,12 @@
+/**
+ * 座位网格组件（老师端 / 学生端共用）
+ *
+ * mode 含义：
+ *   select — 学生选座（空座可点，已占不可点）
+ *   view   — 只读查看
+ *   edit   — 老师编辑布局（切换过道/空位）
+ *   move   — 老师换座模式
+ */
 "use client";
 
 import { useEffect, useState } from "react";

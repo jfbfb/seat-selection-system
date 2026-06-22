@@ -1,3 +1,7 @@
+/**
+ * GET /api/select/[code]
+ * 学生打开邀请链接时调用：校验邀请码，返回座位状态或「已使用/已关闭」
+ */
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getClassSeatState } from "@/lib/class-service";

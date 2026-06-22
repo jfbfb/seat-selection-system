@@ -1,3 +1,10 @@
+/**
+ * 前端 SSE 订阅 Hook
+ *
+ * 1. 先 GET /api/classes/{id}/state 拉一次完整状态
+ * 2. 再连 EventSource 收推送；断线 3 秒后自动重连
+ * 用于：学生选座页、学生查看页、老师班级详情页
+ */
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";

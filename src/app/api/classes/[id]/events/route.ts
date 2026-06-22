@@ -1,3 +1,7 @@
+/**
+ * GET /api/classes/[id]/events — SSE 端点
+ * 浏览器用 EventSource 连接；座位变化时推送最新 seatState JSON
+ */
 import { classEventBus } from "@/lib/events";
 import { getClassSeatState } from "@/lib/class-service";
 
@@ -31,6 +35,7 @@ export async function GET(
 
       void send();
 
+      // 订阅内存事件总线：有人选座/换座时重新查询 DB 并推送
       unsubscribe = classEventBus.subscribe(id, () => {
         void send();
       });

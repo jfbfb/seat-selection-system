@@ -1,3 +1,10 @@
+/**
+ * 选座核心业务逻辑（防抢座）
+ *
+ * selectSeat() 是本项目最重要的函数：
+ * 在数据库事务里同时「占座 + 标记邀请码已用」，避免两人抢同一座。
+ * 座位是否可选的条件：type=normal 且尚无 Selection 记录。
+ */
 import { Gender } from "@prisma/client";
 import { prisma } from "./prisma";
 import { generateViewToken } from "./codes";
@@ -70,7 +77,9 @@ export async function selectSeat(params: {
 
   const viewToken = generateViewToken();
 
+  // 事务：要么全部成功，要么全部回滚（防并发抢座的关键）
   const result = await prisma.$transaction(async (tx) => {
+    // 再次确认座位仍为空（带 selection: null 条件）
     const seat = await tx.seat.findFirst({
       where: {
         id: params.seatId,
@@ -110,6 +119,7 @@ export async function selectSeat(params: {
   });
 
   await checkAndAutoCloseClass(invite.classId);
+  // 通知所有正在看座位图的浏览器刷新（SSE）
   emitClassEvent(invite.classId, "seat_selected");
 
   return {

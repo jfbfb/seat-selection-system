@@ -1,3 +1,10 @@
+/**
+ * 班级与座位服务层
+ *
+ * - createClassWithSeats：新建班级时批量生成 rows×cols 个 Seat
+ * - getClassSeatState：聚合班级+座位+占座信息，供页面和 SSE 使用
+ * - resizeClassGrid / updateSeatType：老师编辑布局时调用
+ */
 import { SeatType } from "@prisma/client";
 import { prisma } from "./prisma";
 import { emitClassEvent } from "./events";
@@ -139,6 +146,7 @@ export async function updateSeatType(
   emitClassEvent(classId, "layout_updated");
 }
 
+/** 聚合班级完整座位状态，SeatGrid 和 SSE 都依赖此结构 */
 export async function getClassSeatState(classId: string) {
   const cls = await prisma.class.findUnique({
     where: { id: classId },

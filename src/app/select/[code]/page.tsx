@@ -1,3 +1,9 @@
+/**
+ * 学生选座页 /select/[code]
+ *
+ * 流程：加载邀请码 → 显示 SeatGrid → 选座填表 → POST 选座 → 跳转查看页
+ * useClassEvents 负责实时同步其他人选座的结果
+ */
 "use client";
 
 import { useEffect, useState } from "react";
